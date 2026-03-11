@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 CATALOG_PATH = Path("catalog/approved_source_catalog.csv")
-CHUNKS_PATH = Path("chunks/chunks.csv")
+CHUNKS_PATH = Path("docs/chunks.csv")
 
 st.set_page_config(
     page_title="IRCC Governed RAG Assistant",
