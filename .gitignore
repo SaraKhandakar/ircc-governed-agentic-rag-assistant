@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+output/
+index/
+logs/
+data_raw/
+data_text/
+chunks/*.jsonl
+.DS_Store
