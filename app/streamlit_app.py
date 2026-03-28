@@ -1,443 +1,408 @@
 import os
+import sys
 from pathlib import Path
-
-import pandas as pd
+from dotenv import load_dotenv
+ 
+load_dotenv()
+ 
+# Make sure agent/ is importable
+sys.path.insert(0, str(Path(__file__).parent.parent))
+ 
 import streamlit as st
-from groq import Groq
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-
-CATALOG_PATH = Path("catalog/approved_source_catalog.csv")
-CHUNKS_PATH = Path("docs/chunks.csv")
-
+from agent.router import route_and_answer
+ 
 st.set_page_config(
-    page_title="IRCC Governed RAG Assistant",
-    page_icon="📘",
-    layout="wide"
+    page_title="IRCC RAG Assistant",
+    page_icon="🍁",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
-
+ 
+# Load fonts
+st.markdown('<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">', unsafe_allow_html=True)
+ 
+# -----------------------------
+# Custom CSS
+# -----------------------------
+st.markdown("""
+<style>
+ 
+html, body, [class*="css"] {
+    font-family: 'Outfit', sans-serif;
+    background-color: #0a0e1a;
+    color: #e8eaf0;
+}
+ 
+.stApp {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1220 50%, #0a0f1c 100%);
+}
+ 
+.block-container {
+    padding-top: 0.5rem !important;
+    padding-bottom: 1rem !important;
+    max-width: 100% !important;
+}
+ 
+#MainMenu, footer, header { visibility: hidden; }
+.stDeployButton { display: none; }
+ 
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0d1525 0%, #0a1020 100%);
+    border-right: 1px solid rgba(255, 77, 77, 0.15);
+}
+ 
+.sidebar-logo {
+    padding: 1.5rem 0 1rem 0;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 77, 77, 0.15);
+    margin-bottom: 1.5rem;
+}
+.sidebar-logo .maple { font-size: 2rem; display: block; margin-bottom: 0.25rem; }
+.sidebar-logo .brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #ff4d4d;
+    font-weight: 700;
+}
+.sidebar-logo .sub { font-size: 0.65rem; color: rgba(232, 234, 240, 0.4); margin-top: 0.15rem; }
+ 
+.stButton > button {
+    background: rgba(255, 77, 77, 0.06) !important;
+    border: 1px solid rgba(255, 77, 77, 0.2) !important;
+    color: rgba(232, 234, 240, 0.8) !important;
+    border-radius: 8px !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.75rem !important;
+    font-weight: 400 !important;
+    padding: 0.5rem 0.75rem !important;
+    text-align: left !important;
+    width: 100% !important;
+    transition: all 0.2s ease !important;
+    line-height: 1.4 !important;
+}
+.stButton > button:hover {
+    background: rgba(255, 77, 77, 0.15) !important;
+    border-color: rgba(255, 77, 77, 0.5) !important;
+    color: #ffffff !important;
+    transform: translateX(3px) !important;
+}
+ 
+.main-header { padding: 0.25rem 0 1rem 0; border-bottom: 1px solid rgba(255, 77, 77, 0.12); margin-bottom: 2rem; }
+.main-header .eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #ff4d4d;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+.main-header h1 {
+    font-family: 'Playfair Display', serif !important;
+    font-size: 3rem !important;
+    font-weight: 900 !important;
+    color: #ffffff !important;
+    line-height: 1.05 !important;
+    margin: 0 0 0.5rem 0 !important;
+    letter-spacing: -0.01em !important;
+}
+.main-header h1 span { color: #ff4d4d; font-style: italic; }
+.main-header .subtitle {
+    font-size: 0.88rem;
+    color: rgba(232, 234, 240, 0.45);
+    font-weight: 300;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.02em;
+}
+ 
+.info-banner {
+    background: rgba(255, 77, 77, 0.06);
+    border: 1px solid rgba(255, 77, 77, 0.2);
+    border-left: 3px solid #ff4d4d;
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.8rem;
+    color: rgba(232, 234, 240, 0.7);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+ 
+.tool-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+.tool-rag { background: rgba(77, 144, 255, 0.1); border: 1px solid rgba(77, 144, 255, 0.3); color: #4d90ff; }
+.tool-data { background: rgba(77, 255, 144, 0.1); border: 1px solid rgba(77, 255, 144, 0.3); color: #4dff90; }
+.tool-combined { background: rgba(255, 144, 77, 0.1); border: 1px solid rgba(255, 144, 77, 0.3); color: #ff904d; }
+.tool-small_talk { background: rgba(200, 200, 200, 0.1); border: 1px solid rgba(200,200,200,0.2); color: #aaa; }
+ 
+[data-testid="stChatMessage"] {
+    background: transparent !important;
+    border: none !important;
+    padding: 0.25rem 0 !important;
+    margin-bottom: 0.5rem !important;
+}
+ 
+[data-testid="stChatInput"] {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+}
+[data-testid="stChatInput"]:focus-within {
+    border-color: rgba(255, 77, 77, 0.4) !important;
+    box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.08) !important;
+}
+[data-testid="stChatInput"] textarea {
+    background: transparent !important;
+    color: #e8eaf0 !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.9rem !important;
+}
+[data-testid="stChatInput"] textarea::placeholder { color: rgba(232, 234, 240, 0.3) !important; }
+ 
+[data-baseweb="tab-list"] { background: transparent !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important; }
+[data-baseweb="tab"] {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.75rem !important;
+    color: rgba(232, 234, 240, 0.4) !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    background: transparent !important;
+    border-bottom: 2px solid transparent !important;
+}
+[aria-selected="true"][data-baseweb="tab"] { color: #ff4d4d !important; border-bottom-color: #ff4d4d !important; background: transparent !important; }
+ 
+[data-testid="stExpander"] {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 8px !important;
+    margin-bottom: 0.5rem !important;
+}
+ 
+.source-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+}
+.source-card .label { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(232, 234, 240, 0.35); font-weight: 600; margin-bottom: 0.2rem; }
+.source-card .value { font-size: 0.85rem; color: rgba(232, 234, 240, 0.85); }
+ 
+.status-badge {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: rgba(255, 77, 77, 0.08); border: 1px solid rgba(255, 77, 77, 0.2);
+    border-radius: 20px; padding: 0.3rem 0.7rem; font-size: 0.7rem;
+    color: rgba(232, 234, 240, 0.6); letter-spacing: 0.05em;
+}
+.status-dot {
+    width: 6px; height: 6px; background: #ff4d4d; border-radius: 50%;
+    box-shadow: 0 0 6px rgba(255, 77, 77, 0.8); animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+ 
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 77, 77, 0.3); border-radius: 2px; }
+ 
+</style>
+""", unsafe_allow_html=True)
+ 
 # -----------------------------
 # Session state
 # -----------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
 if "pending_question" not in st.session_state:
     st.session_state.pending_question = None
-
+ 
 # -----------------------------
 # Sidebar
 # -----------------------------
 with st.sidebar:
-    st.header("Settings")
-
-    top_chunks = st.slider("Top chunks to retrieve", 1, 10, 5)
-    show_technical = st.checkbox("Show technical details", value=False)
-
+    st.markdown("""
+    <div class="sidebar-logo">
+        <span class="maple">🍁</span>
+        <div class="brand">IRCC RAG</div>
+        <div class="sub">Agentic Intelligence</div>
+    </div>
+    """, unsafe_allow_html=True)
+ 
+    st.markdown("**MODEL**")
     model_name = st.selectbox(
-        "Groq model",
+        "Model",
         ["llama-3.1-8b-instant", "llama-3.1-70b-versatile"],
-        index=0
+        index=0,
+        label_visibility="collapsed"
     )
-
-    score_threshold = st.slider(
-        "Minimum relevance score",
-        min_value=0.00,
-        max_value=1.00,
-        value=0.15,
-        step=0.01
-    )
-
+ 
     st.markdown("---")
-    st.subheader("Suggested Questions")
-
+    st.markdown("**AGENT MODE**")
+    st.caption("🔵 RAG — policy & methodology questions")
+    st.caption("🟢 Data — numerical & statistical questions")
+    st.caption("🟠 Combined — questions needing both")
+ 
+    st.markdown("---")
+    st.markdown("**SUGGESTED QUESTIONS**")
+ 
     suggested_questions = [
         "What dataset tracks permanent resident admissions?",
         "What is the methodology for processing times?",
-        "What information is included in the Operational Processing Monthly IRCC Updates dataset?",
+        "How many permanent residents were admitted in total?",
+        "What information is included in the Operational Processing Monthly dataset?",
         "Which approved sources relate to citizenship applications?",
-        "What information is available about asylum claimants in Canada?"
+        "What is the total count of asylum claimants in Canada?",
     ]
-
+ 
     for i, q in enumerate(suggested_questions):
         if st.button(q, key=f"suggested_{i}"):
             st.session_state.pending_question = q
-
+ 
     st.markdown("---")
-    if st.button("Clear Chat"):
+    if st.button("↺  Clear conversation", key="clear_chat"):
         st.session_state.messages = []
         st.session_state.pending_question = None
         st.rerun()
-
+ 
 # -----------------------------
-# Data loaders
+# Header
 # -----------------------------
-@st.cache_data
-def load_catalog():
-    if not CATALOG_PATH.exists():
-        raise FileNotFoundError(f"Catalog file not found: {CATALOG_PATH}")
-
-    df = pd.read_csv(CATALOG_PATH)
-    df.columns = [c.lower().strip() for c in df.columns]
-
-    if "approved" not in df.columns:
-        raise ValueError("The catalog must contain an 'approved' column.")
-
-    df["approved"] = df["approved"].astype(str).str.strip().str.lower()
-    df = df[df["approved"].isin(["yes", "y", "true", "1", "approved"])].copy()
-
-    expected_cols = [
-        "item_id",
-        "item_name",
-        "item_type",
-        "tags",
-        "notes",
-        "publisher",
-        "owner_or_contact",
-        "last_updated",
-        "url",
-        "source_url",
-        "access_level",
-    ]
-
-    for col in expected_cols:
-        if col not in df.columns:
-            df[col] = ""
-
-    for col in expected_cols:
-        df[col] = df[col].fillna("").astype(str).str.strip()
-
-    df["search_text"] = (
-        df["item_name"] + " " +
-        df["item_type"] + " " +
-        df["tags"] + " " +
-        df["notes"] + " " +
-        df["publisher"]
-    ).str.strip()
-
-    return df.reset_index(drop=True)
-
-
-@st.cache_data
-def load_chunks():
-    if not CHUNKS_PATH.exists():
-        raise FileNotFoundError(f"Chunks file not found: {CHUNKS_PATH}")
-
-    df = pd.read_csv(CHUNKS_PATH)
-    df.columns = [c.lower().strip() for c in df.columns]
-
-    required_cols = ["chunk_id", "source_id", "text"]
-    missing = [c for c in required_cols if c not in df.columns]
-    if missing:
-        raise ValueError(f"Missing required chunk columns: {missing}")
-
-    df["source_id"] = df["source_id"].fillna("").astype(str).str.strip()
-    df["text"] = df["text"].fillna("").astype(str).str.strip()
-
-    return df
-
+st.markdown("""
+<div class="main-header">
+    <div class="eyebrow">🍁 Immigration, Refugees and Citizenship Canada</div>
+    <h1>IRCC <span>RAG</span> Assistant</h1>
+    <div class="subtitle">Ask questions about approved IRCC datasets, reports and methodologies</div>
+</div>
+""", unsafe_allow_html=True)
+ 
+st.markdown("""
+<div class="info-banner">
+    <div class="status-badge"><div class="status-dot"></div>Agentic mode active</div>
+    &nbsp; Routes questions automatically between semantic search, data analysis and combined reasoning.
+</div>
+""", unsafe_allow_html=True)
+ 
 # -----------------------------
-# Small talk handler
+# Tool badge helper
 # -----------------------------
-def handle_small_talk(user_input: str):
-
-    text = user_input.strip().lower()
-
-    greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"]
-    thanks = ["thanks", "thank you", "thankyou", "thx", "thank you for your help"]
-    bye_words = ["bye", "goodbye", "see you"]
-
-    if any(g in text for g in greetings):
-        return "Hello! I can help you explore approved IRCC datasets, reports, and methodologies. What would you like to know?"
-
-    if any(t in text for t in thanks):
-        return "You're welcome! If you have any questions about approved IRCC sources, feel free to ask."
-
-    if any(b in text for b in bye_words):
-        return "Goodbye! Feel free to return anytime if you need help with IRCC datasets or documents."
-
-    return None
-
+def tool_badge(tool_used: str) -> str:
+    labels = {
+        "rag": ("🔵", "RAG Retrieval"),
+        "data": ("🟢", "Data Analysis"),
+        "combined": ("🟠", "Combined"),
+        "small_talk": ("⚪", "Chat"),
+    }
+    icon, label = labels.get(tool_used, ("⚪", tool_used))
+    css_class = f"tool-{tool_used}"
+    return f'<span class="tool-badge {css_class}">{icon} {label}</span>'
+ 
 # -----------------------------
-# Retrieval
+# Render details tabs
 # -----------------------------
-def find_best_document(query, catalog_df):
-    vectorizer = TfidfVectorizer(stop_words="english")
-    doc_vectors = vectorizer.fit_transform(catalog_df["search_text"])
-    query_vector = vectorizer.transform([query])
-
-    scores = cosine_similarity(query_vector, doc_vectors).flatten()
-
-    ranked = catalog_df.copy()
-    ranked["score"] = scores
-
-    return ranked.sort_values("score", ascending=False).head(1)
-
-
-def find_best_chunks(query, chunks_df, source_id, k):
-    doc_chunks = chunks_df[chunks_df["source_id"] == source_id].copy()
-
-    if doc_chunks.empty:
-        return pd.DataFrame()
-
-    vectorizer = TfidfVectorizer(stop_words="english")
-    chunk_vectors = vectorizer.fit_transform(doc_chunks["text"])
-    query_vector = vectorizer.transform([query])
-
-    scores = cosine_similarity(query_vector, chunk_vectors).flatten()
-
-    doc_chunks["score"] = scores
-    return doc_chunks.sort_values("score", ascending=False).head(k)
-
-# -----------------------------
-# LLM
-# -----------------------------
-def build_prompt(query, context):
-    return f"""
-You are a helpful IRCC internal assistant.
-
-Use only the provided context to answer the question.
-Do not make up information.
-If the answer is not clearly supported by the context, say:
-"I could not find a complete answer in the approved sources provided."
-
-Do not say "based on the provided context".
-Write the answer naturally and directly.
-Keep the answer concise, clear, and professional.
-Prefer 4 to 6 sentences.
-
-Context:
-{context}
-
-Question:
-{query}
-
-Answer:
-""".strip()
-
-
-def generate_answer(query, context, model):
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        raise ValueError("GROQ_API_KEY is not set. Please set it in your terminal before running Streamlit.")
-
-    client = Groq(api_key=api_key)
-
-    prompt = build_prompt(query, context)
-
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": "You answer only from approved retrieved context."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.2,
-        max_tokens=300
-    )
-
-    return response.choices[0].message.content
-
-# -----------------------------
-# UI Header
-# -----------------------------
-st.title("IRCC Governed RAG Assistant")
-st.caption("Ask questions about approved IRCC datasets, reports, and methodologies.")
-st.info("This assistant answers using retrieved context from approved IRCC sources only.")
-
-# -----------------------------
-# Helper: render assistant details
-# -----------------------------
-def render_assistant_details(msg):
-    if "source" not in msg:
+def render_details(msg: dict):
+    sources = msg.get("sources", [])
+    context = msg.get("context", "")
+    data_summary = msg.get("data_summary", "")
+ 
+    if not sources and not context and not data_summary:
         return
-
-    tabs = st.tabs(["Sources", "Retrieved Chunks", "Context", "Technical"])
-
+ 
+    tabs = st.tabs(["📄 Sources", "📋 Context", "📊 Data"])
+ 
     with tabs[0]:
-        source = msg["source"]
-        st.write(f"**Item ID:** {source.get('item_id', '')}")
-        st.write(f"**Item Name:** {source.get('item_name', '')}")
-        st.write(f"**Item Type:** {source.get('item_type', '')}")
-        st.write(f"**Publisher:** {source.get('publisher', '')}")
-        st.write(f"**Owner/Contact:** {source.get('owner_or_contact', '')}")
-        st.write(f"**Last Updated:** {source.get('last_updated', '')}")
-        st.write(f"**Access Level:** {source.get('access_level', '')}")
-        st.write(f"**Tags:** {source.get('tags', '')}")
-
-        source_url = source.get("source_url") or source.get("url") or ""
-        if source_url:
-            st.markdown(f"[Open Source]({source_url})")
-
+        if sources:
+            for i, chunk in enumerate(sources[:3], 1):
+                st.markdown(f"""
+                <div class="source-card">
+                    <div class="label">Source {i} · Score: {chunk.get('score', 0):.3f}</div>
+                    <div class="value">{chunk.get('title', 'Unknown')}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                if chunk.get("url"):
+                    st.markdown(f"[↗ Open Source]({chunk['url']})")
+        else:
+            st.caption("No RAG sources for this response.")
+ 
     with tabs[1]:
-        chunks = msg.get("chunks", [])
-        if not chunks:
-            st.write("No retrieved chunks available.")
+        if context:
+            st.text_area("Context sent to LLM", context, height=200,
+                        key=f"ctx_{msg.get('message_id', 'x')}")
         else:
-            for i, chunk in enumerate(chunks, start=1):
-                label = f"Chunk {i} | {chunk.get('chunk_id', '')} | Score: {chunk.get('score', 0):.4f}"
-                with st.expander(label):
-                    st.write(chunk.get("text", ""))
-
+            st.caption("No text context for this response.")
+ 
     with tabs[2]:
-        st.text_area(
-            "Context sent to the LLM",
-            msg.get("context", ""),
-            height=250,
-            key=f"context_{msg.get('message_id', 'x')}"
-        )
-
-    with tabs[3]:
-        if show_technical:
-            st.write(f"**Mapped Source ID:** `{msg.get('source_id', '')}`")
-            st.write(f"**Model:** `{msg.get('model_name', '')}`")
-            if "relevance_score" in msg:
-                st.write(f"**Metadata Relevance Score:** `{msg.get('relevance_score', 0):.4f}`")
-            if "threshold" in msg:
-                st.write(f"**Threshold Used:** `{msg.get('threshold', 0):.2f}`")
+        if data_summary:
+            st.text_area("Data summary used", data_summary, height=200,
+                        key=f"data_{msg.get('message_id', 'x')}")
         else:
-            st.caption("Enable 'Show technical details' in the sidebar to view debug information.")
-
+            st.caption("No CSV data was used for this response.")
+ 
 # -----------------------------
 # Render chat history
 # -----------------------------
 for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
+        if msg["role"] == "assistant" and msg.get("tool_used"):
+            st.markdown(tool_badge(msg["tool_used"]), unsafe_allow_html=True)
         st.markdown(msg["content"])
-
         if msg["role"] == "assistant":
             msg["message_id"] = idx
-            render_assistant_details(msg)
-
+            render_details(msg)
+ 
 # -----------------------------
 # Chat input
 # -----------------------------
-user_input = st.chat_input("Ask a question about approved IRCC sources...")
-
+user_input = st.chat_input("Ask anything about IRCC — policy questions or data questions...")
+ 
 if st.session_state.pending_question:
     user_input = st.session_state.pending_question
     st.session_state.pending_question = None
-
+ 
 # -----------------------------
-# Process new message
+# Process message
 # -----------------------------
 if user_input:
-    st.session_state.messages.append({
-        "role": "user",
-        "content": user_input
-    })
-
+    st.session_state.messages.append({"role": "user", "content": user_input})
+ 
     with st.chat_message("user"):
         st.markdown(user_input)
-
+ 
     with st.chat_message("assistant"):
         try:
-            # Step 1: small talk / greeting
-            small_talk_response = handle_small_talk(user_input)
-
-            if small_talk_response:
-                st.markdown(small_talk_response)
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": small_talk_response
-                })
-
-            else:
-                # Step 2: run RAG pipeline
-                catalog_df = load_catalog()
-                chunks_df = load_chunks()
-
-                best_doc = find_best_document(user_input, catalog_df)
-
-                # Relevance threshold
-                if best_doc.empty or best_doc["score"].iloc[0] < score_threshold:
-                    answer_text = (
-                        "I could not find a relevant answer in the approved IRCC sources. "
-                        "This assistant focuses on immigration datasets, reports, and methodologies."
-                    )
-
-                    st.markdown(answer_text)
-
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": answer_text
-                    })
-
-                else:
-                    doc = best_doc.iloc[0]
-                    relevance_score = float(best_doc["score"].iloc[0])
-
-                    # Current mapping logic using catalog row position
-                    # Keep this until chunk pipeline is updated to use real item_id
-                    source_index = best_doc.index[0] + 1
-                    source_id = f"IRCC_{source_index:04d}"
-
-                    retrieved_chunks = find_best_chunks(user_input, chunks_df, source_id, top_chunks)
-
-                    if retrieved_chunks.empty:
-                        answer_text = (
-                            "I found a relevant approved document, "
-                            "but no chunks were available for retrieval."
-                        )
-
-                        st.markdown(answer_text)
-
-                        assistant_message = {
-                            "role": "assistant",
-                            "content": answer_text,
-                            "source": doc.to_dict(),
-                            "chunks": [],
-                            "context": "",
-                            "source_id": source_id,
-                            "model_name": model_name,
-                            "relevance_score": relevance_score,
-                            "threshold": score_threshold
-                        }
-
-                        render_assistant_details(assistant_message)
-                        st.session_state.messages.append(assistant_message)
-
-                    else:
-                        context = "\n\n".join(retrieved_chunks["text"].head(3).tolist())
-
-                        with st.spinner("Generating answer..."):
-                            answer_text = generate_answer(user_input, context, model_name)
-                        st.markdown(answer_text)
-
-                        # If the LLM refuses or says answer is not in approved sources,
-                        # do NOT show sources/chunks for that response.
-                        refusal_markers = [
-                             "i could not find a complete answer",
-                             "i could not find a relevant answer",
-                             "not clearly supported by the context",
-                             "not available in the approved sources"
-                        ]
-
-                        if any(marker in answer_text.lower() for marker in refusal_markers):
-                            assistant_message = {
-                                "role": "assistant",
-                                "content": answer_text
-                             }
-                            st.session_state.messages.append(assistant_message)
-
-                        else:
-                            assistant_message = {
-                                "role": "assistant",
-                                "content": answer_text,
-                                "source": doc.to_dict(),
-                                "chunks": retrieved_chunks.to_dict(orient="records"),
-                                "context": context,
-                                "source_id": source_id,
-                                "model_name": model_name,
-                                "relevance_score": relevance_score,
-                                "threshold": score_threshold
-                         }
-
-                        render_assistant_details(assistant_message)
-                        st.session_state.messages.append(assistant_message)
+            with st.spinner("Agent thinking..."):
+                result = route_and_answer(user_input, model=model_name)
+ 
+            tool_used = result.get("tool_used", "rag")
+            answer = result.get("answer", "I could not find an answer.")
+ 
+            st.markdown(tool_badge(tool_used), unsafe_allow_html=True)
+            st.markdown(answer)
+ 
+            assistant_message = {
+                "role": "assistant",
+                "content": answer,
+                "tool_used": tool_used,
+                "sources": result.get("sources", []),
+                "context": result.get("context", ""),
+                "data_summary": result.get("data_summary", ""),
+            }
+ 
+            render_details(assistant_message)
+            st.session_state.messages.append(assistant_message)
+ 
         except Exception as e:
             error_text = f"Error: {e}"
             st.error(error_text)
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": error_text
-            })
+            st.session_state.messages.append({"role": "assistant", "content": error_text})
