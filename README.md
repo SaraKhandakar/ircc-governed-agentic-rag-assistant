@@ -1,80 +1,93 @@
-# IRCC Governed RAG Assistant
+# IRCC Governed Agentic RAG Assistant
 
-This project implements a governed Retrieval-Augmented Generation (RAG) assistant designed to help IRCC employees discover datasets, reports, and methodological guidance from approved internal sources.
+An agentic Retrieval-Augmented Generation (RAG) system for exploring IRCC immigration data and policy documents.
 
-The system uses a catalog-driven approach to ensure that only authorized sources are used for document ingestion and retrieval.
+## Tech Stack
+- **Embeddings:** HuggingFace `sentence-transformers/all-MiniLM-L6-v2`
+- **Vector Store:** ChromaDB (2,239 chunks from 29 approved IRCC sources)
+- **LLM:** Groq API `llama-3.1-8b-instant`
+- **Orchestration:** LangChain
+- **UI:** Streamlit
 
-The project is organized into multiple layers including document ingestion, chunking, metadata-based retrieval, and chunk-level retrieval.
+## Setup Instructions
 
----
+### 1. Clone the repo
+```bash
+git clone https://github.com/anamvakil/ircc-governed-rag-assistant.git
+cd ircc-governed-rag-assistant
+```
 
-# System Architecture
+### 2. Create a virtual environment
+```bash
+python -m venv .venv
+```
 
-The current architecture follows this pipeline:
+Activate it:
+- **Windows:** `.venv\Scripts\activate`
+- **Mac/Linux:** `source .venv/bin/activate`
 
-User Query  
-→ Metadata Retrieval (Approved Source Catalog)  
-→ Identify Relevant Document  
-→ Chunk Retrieval  
-→ Retrieve Relevant Text Segments  
-→ (Next Stage) LLM Generation via Groq / Llama  
-→ Chatbot Response
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
 
-This approach ensures:
+### 4. Add your Groq API key
+Create a `.env` file in the project root:
+```
+GROQ_API_KEY=your_groq_api_key_here
+```
 
-- Only approved sources are used
-- Retrieval is more accurate
-- Context sent to the LLM is smaller and more relevant
+Get a free API key at: https://console.groq.com
 
----
+### 5. Run the app
+```bash
+streamlit run app/streamlit_app.py
+```
 
-# Project Components
-
-## 1. Approved Source Catalog
-
-Location: `catalog/approved_source_catalog.csv`
-
-This catalog acts as the governance layer of the system.
-
-It contains metadata about all datasets and documents including:
-
-- item_id
-- item_name
-- item_type
-- url
-- publisher
-- owner/contact
-- last_updated
-- tags
-- notes
-- approved status
-
-Only sources marked **approved = yes** are processed by the pipeline.
+Then open your browser at `http://localhost:8501`
 
 ---
 
-# 2. Chunk Pipeline
+## What It Can Answer
 
-Script: `pipeline/chunk_pipeline.py`
+### Policy & Methodology (RAG)
+- What is the International Mobility Program?
+- How does IRCC process work permit applications?
+- What are the eligibility criteria for Express Entry?
 
-Purpose:
+### Data Questions (CSV Analysis)
+- How many permanent residents came from India?
+- Which cities have the most PGWP holders?
+- What skill levels do IMP work permit holders have?
+- Which age group has the most permanent residents?
+- What is the gender breakdown of permanent residents by province?
 
-Processes approved documents and converts them into smaller searchable text chunks.
+### Combined (RAG + Data)
+- How does the methodology for counting work permit holders work, and what are the latest numbers?
 
-Pipeline steps:
+---
 
-1. Load Approved Source Catalog
-2. Filter approved sources
-3. Download files (PDF / CSV / HTML)
-4. Extract text
-5. Clean text
-6. Perform section-aware splitting
-7. Generate overlapping text chunks
-8. Save chunk outputs
+## Dataset Sources
+All data sourced from IRCC's official open data portal (open.canada.ca), updated monthly.
 
-Output files:
+| File | Description |
+|------|-------------|
+| `IRCC_0009_data.csv` | IMP/TFWP work permit holders by province, program, NOC |
+| `IRCC_0014_source_14.csv` | Work permit holders by province and occupation |
+| `ODP-PR-Citz.csv` | Permanent residents by country of citizenship |
+| `ODP-PR-Gender.csv` | Permanent residents by province and gender |
+| `ODP-PR-AgeGroup.csv` | Permanent residents by province and age group |
+| `ODP-WP-IMP-Citizenship.csv` | IMP holders by country of citizenship |
+| `ODP-WP-IMP-Gender-Skill.csv` | IMP holders by gender and skill level |
+| `ODP-WP-IMP-Province-Program.csv` | IMP holders by province and program |
+| `ODP-WP-PGWP-Province-CMA.csv` | PGWP holders by province and city |
 
+---
 
-
-
-
+## Agent Routing
+| Badge | Tool | Used For |
+|-------|------|----------|
+| 🔵 RAG | ChromaDB semantic search | Policy and methodology questions |
+| 🟢 DATA ANALYSIS | Pandas CSV analysis | Numerical and statistical questions |
+| 🟠 COMBINED | RAG + Data | Questions needing both policy and numbers |
+| ⚪ SMALL TALK | Direct response | Greetings and farewells |
