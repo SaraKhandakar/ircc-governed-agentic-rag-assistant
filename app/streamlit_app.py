@@ -4,6 +4,8 @@ from pathlib import Path
 from dotenv import load_dotenv
  
 load_dotenv()
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY") or st.secrets["GROQ_API_KEY"]
  
 # Make sure agent/ is importable
 sys.path.insert(0, str(Path(__file__).parent.parent))
