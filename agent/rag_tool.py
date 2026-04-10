@@ -23,6 +23,7 @@ def _load():
             encode_kwargs={"normalize_embeddings": True}
         )
         _vectorstore = Chroma(
+            collection_name="langchain",
             persist_directory=VECTORSTORE_DIR,
             embedding_function=_embeddings
         )

@@ -32,25 +32,30 @@ html, body, [class*="css"] {
     background-color: #0a0e1a;
     color: #e8eaf0;
 }
- 
+
+body {
+    color: #e8eaf0 !important;
+}
+
 .stApp {
     background: linear-gradient(135deg, #0a0e1a 0%, #0d1220 50%, #0a0f1c 100%);
+    color: #e8eaf0 !important;
 }
- 
+
 .block-container {
     padding-top: 0.5rem !important;
     padding-bottom: 1rem !important;
     max-width: 100% !important;
 }
- 
+
 #MainMenu, footer, header { visibility: hidden; }
 .stDeployButton { display: none; }
- 
+
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, #0d1525 0%, #0a1020 100%);
     border-right: 1px solid rgba(255, 77, 77, 0.15);
 }
- 
+
 .sidebar-logo {
     padding: 1.5rem 0 1rem 0;
     text-align: center;
@@ -66,12 +71,21 @@ html, body, [class*="css"] {
     color: #ff4d4d;
     font-weight: 700;
 }
-.sidebar-logo .sub { font-size: 0.65rem; color: rgba(232, 234, 240, 0.4); margin-top: 0.15rem; }
- 
+.sidebar-logo .sub {
+    font-size: 0.65rem;
+    color: rgba(232, 234, 240, 0.55);
+    margin-top: 0.15rem;
+}
+
+/* Sidebar text */
+[data-testid="stSidebar"] * {
+    color: #e8eaf0 !important;
+}
+
 .stButton > button {
     background: rgba(255, 77, 77, 0.06) !important;
     border: 1px solid rgba(255, 77, 77, 0.2) !important;
-    color: rgba(232, 234, 240, 0.8) !important;
+    color: rgba(232, 234, 240, 0.9) !important;
     border-radius: 8px !important;
     font-family: 'Outfit', sans-serif !important;
     font-size: 0.75rem !important;
@@ -88,8 +102,12 @@ html, body, [class*="css"] {
     color: #ffffff !important;
     transform: translateX(3px) !important;
 }
- 
-.main-header { padding: 0.25rem 0 1rem 0; border-bottom: 1px solid rgba(255, 77, 77, 0.12); margin-bottom: 2rem; }
+
+.main-header {
+    padding: 0.25rem 0 1rem 0;
+    border-bottom: 1px solid rgba(255, 77, 77, 0.12);
+    margin-bottom: 2rem;
+}
 .main-header .eyebrow {
     font-family: 'Cormorant Garamond', serif;
     font-size: 0.72rem;
@@ -111,12 +129,12 @@ html, body, [class*="css"] {
 .main-header h1 span { color: #ff4d4d; font-style: italic; }
 .main-header .subtitle {
     font-size: 0.88rem;
-    color: rgba(232, 234, 240, 0.45);
+    color: rgba(232, 234, 240, 0.75);
     font-weight: 300;
     font-family: 'Outfit', sans-serif;
     letter-spacing: 0.02em;
 }
- 
+
 .info-banner {
     background: rgba(255, 77, 77, 0.06);
     border: 1px solid rgba(255, 77, 77, 0.2);
@@ -125,12 +143,12 @@ html, body, [class*="css"] {
     padding: 0.75rem 1rem;
     margin-bottom: 1.5rem;
     font-size: 0.8rem;
-    color: rgba(232, 234, 240, 0.7);
+    color: rgba(232, 234, 240, 0.88);
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
- 
+
 .tool-badge {
     display: inline-flex;
     align-items: center;
@@ -143,18 +161,45 @@ html, body, [class*="css"] {
     text-transform: uppercase;
     margin-bottom: 0.5rem;
 }
-.tool-rag { background: rgba(77, 144, 255, 0.1); border: 1px solid rgba(77, 144, 255, 0.3); color: #4d90ff; }
-.tool-data { background: rgba(77, 255, 144, 0.1); border: 1px solid rgba(77, 255, 144, 0.3); color: #4dff90; }
-.tool-combined { background: rgba(255, 144, 77, 0.1); border: 1px solid rgba(255, 144, 77, 0.3); color: #ff904d; }
-.tool-small_talk { background: rgba(200, 200, 200, 0.1); border: 1px solid rgba(200,200,200,0.2); color: #aaa; }
- 
+.tool-rag { background: rgba(77, 144, 255, 0.1); border: 1px solid rgba(77, 144, 255, 0.3); color: #6ea8ff; }
+.tool-data { background: rgba(77, 255, 144, 0.1); border: 1px solid rgba(77, 255, 144, 0.3); color: #7dffaf; }
+.tool-combined { background: rgba(255, 144, 77, 0.1); border: 1px solid rgba(255, 144, 77, 0.3); color: #ffb07a; }
+.tool-small_talk { background: rgba(200, 200, 200, 0.1); border: 1px solid rgba(200,200,200,0.2); color: #d0d0d0; }
+
+/* Chat container */
 [data-testid="stChatMessage"] {
     background: transparent !important;
     border: none !important;
     padding: 0.25rem 0 !important;
     margin-bottom: 0.5rem !important;
+    color: #e8eaf0 !important;
 }
- 
+
+/* Force all chat text visible */
+[data-testid="stChatMessage"] * {
+    color: #e8eaf0 !important;
+    opacity: 1 !important;
+}
+
+/* Main markdown/text visibility */
+.stMarkdown,
+.stMarkdown p,
+.stMarkdown div,
+.stMarkdown span,
+.stText,
+p, li, label, span, div {
+    color: #e8eaf0 !important;
+}
+
+/* Fix links */
+a {
+    color: #7db8ff !important;
+}
+a:hover {
+    color: #a9d2ff !important;
+}
+
+/* Chat input */
 [data-testid="stChatInput"] {
     background: rgba(255, 255, 255, 0.04) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -170,27 +215,43 @@ html, body, [class*="css"] {
     font-family: 'Outfit', sans-serif !important;
     font-size: 0.9rem !important;
 }
-[data-testid="stChatInput"] textarea::placeholder { color: rgba(232, 234, 240, 0.3) !important; }
- 
-[data-baseweb="tab-list"] { background: transparent !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important; }
+[data-testid="stChatInput"] textarea::placeholder {
+    color: rgba(232, 234, 240, 0.45) !important;
+}
+
+/* Tabs */
+[data-baseweb="tab-list"] {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
 [data-baseweb="tab"] {
     font-family: 'Outfit', sans-serif !important;
     font-size: 0.75rem !important;
-    color: rgba(232, 234, 240, 0.4) !important;
+    color: rgba(232, 234, 240, 0.65) !important;
     letter-spacing: 0.05em !important;
     text-transform: uppercase !important;
     background: transparent !important;
     border-bottom: 2px solid transparent !important;
 }
-[aria-selected="true"][data-baseweb="tab"] { color: #ff4d4d !important; border-bottom-color: #ff4d4d !important; background: transparent !important; }
- 
+[aria-selected="true"][data-baseweb="tab"] {
+    color: #ff4d4d !important;
+    border-bottom-color: #ff4d4d !important;
+    background: transparent !important;
+}
+
+/* Text areas inside tabs */
+textarea, .stTextArea textarea {
+    color: #e8eaf0 !important;
+    background: rgba(255,255,255,0.03) !important;
+}
+
 [data-testid="stExpander"] {
     background: rgba(255, 255, 255, 0.02) !important;
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
     border-radius: 8px !important;
     margin-bottom: 0.5rem !important;
 }
- 
+
 .source-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.07);
@@ -198,24 +259,217 @@ html, body, [class*="css"] {
     padding: 1rem;
     margin-bottom: 0.5rem;
 }
-.source-card .label { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(232, 234, 240, 0.35); font-weight: 600; margin-bottom: 0.2rem; }
-.source-card .value { font-size: 0.85rem; color: rgba(232, 234, 240, 0.85); }
- 
+.source-card .label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(232, 234, 240, 0.55);
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+.source-card .value {
+    font-size: 0.85rem;
+    color: rgba(232, 234, 240, 0.95);
+}
+
 .status-badge {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    background: rgba(255, 77, 77, 0.08); border: 1px solid rgba(255, 77, 77, 0.2);
-    border-radius: 20px; padding: 0.3rem 0.7rem; font-size: 0.7rem;
-    color: rgba(232, 234, 240, 0.6); letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255, 77, 77, 0.08);
+    border: 1px solid rgba(255, 77, 77, 0.2);
+    border-radius: 20px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.7rem;
+    color: rgba(232, 234, 240, 0.85);
+    letter-spacing: 0.05em;
 }
 .status-dot {
-    width: 6px; height: 6px; background: #ff4d4d; border-radius: 50%;
-    box-shadow: 0 0 6px rgba(255, 77, 77, 0.8); animation: pulse 2s infinite;
+    width: 6px;
+    height: 6px;
+    background: #ff4d4d;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(255, 77, 77, 0.8);
+    animation: pulse 2s infinite;
 }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
- 
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 77, 77, 0.3); border-radius: 2px; }
+
+/* Fix white lower pane / bottom input area */
+[data-testid="stAppViewContainer"] {
+    background: transparent !important;
+}
+
+[data-testid="stMain"] {
+    background: transparent !important;
+}
+
+[data-testid="stBottomBlockContainer"] {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1220 50%, #0a0f1c 100%) !important;
+}
+
+[data-testid="stChatInput"] {
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+footer {
+    background: transparent !important;
+}
+
+/* ---------- GLOBAL DARK BACKGROUND ---------- */
+html, body, .stApp {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1220 50%, #0a0f1c 100%) !important;
+    color: #e8eaf0 !important;
+}
+
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+[data-testid="stMainBlockContainer"],
+section[data-testid="stSidebar"] {
+    background: transparent !important;
+}
+
+/* ---------- BOTTOM AREA ---------- */
+[data-testid="stBottomBlockContainer"] {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1220 50%, #0a0f1c 100%) !important;
+    border-top: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* ---------- CHAT INPUT ---------- */
+[data-testid="stChatInput"] {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+[data-testid="stChatInput"] > div {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+[data-testid="stChatInput"] textarea,
+[data-testid="stChatInput"] input {
+    background: transparent !important;
+    color: #e8eaf0 !important;
+    -webkit-text-fill-color: #e8eaf0 !important;
+    caret-color: #ff4d4d !important;
+    font-family: 'Outfit', sans-serif !important;
+}
+
+[data-testid="stChatInput"] textarea::placeholder,
+[data-testid="stChatInput"] input::placeholder {
+    color: rgba(232, 234, 240, 0.45) !important;
+    -webkit-text-fill-color: rgba(232, 234, 240, 0.45) !important;
+}
+
+/* send button */
+[data-testid="stChatInput"] button {
+    background: #ff4d4d !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* ---------- SELECTBOX / MODEL DROPDOWN ---------- */
+[data-testid="stSelectbox"] > div {
+    background: transparent !important;
+}
+
+[data-testid="stSelectbox"] [data-baseweb="select"] {
+    background: transparent !important;
+}
+
+[data-testid="stSelectbox"] [data-baseweb="select"] > div {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 10px !important;
+    color: #e8eaf0 !important;
+}
+
+[data-testid="stSelectbox"] * {
+    color: #e8eaf0 !important;
+    -webkit-text-fill-color: #e8eaf0 !important;
+}
+
+[data-testid="stSelectbox"] svg {
+    fill: #e8eaf0 !important;
+}
+
+/* ---------- TEXT INPUTS / TEXT AREAS ---------- */
+input, textarea {
+    color: #e8eaf0 !important;
+    -webkit-text-fill-color: #e8eaf0 !important;
+}
+
+/* ---------- SIDEBAR WIDGETS ---------- */
+[data-testid="stSidebar"] .stSelectbox,
+[data-testid="stSidebar"] .stTextInput,
+[data-testid="stSidebar"] .stTextArea {
+    color: #e8eaf0 !important;
+}
+
+/* ---------- DROPDOWN MENU POPUP ---------- */
+div[role="listbox"] {
+    background: #111827 !important;
+    color: #e8eaf0 !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+div[role="option"] {
+    background: transparent !important;
+    color: #e8eaf0 !important;
+}
+
+div[role="option"]:hover {
+    background: rgba(255, 77, 77, 0.12) !important;
+}
+
+/* Force chat input inner area dark */
+[data-testid="stChatInput"] {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+[data-testid="stChatInput"] > div {
+    background: #111827 !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 12px !important;
+}
+
+[data-testid="stChatInput"] textarea {
+    background-color: #111827 !important;
+    color: #e8eaf0 !important;
+    -webkit-text-fill-color: #e8eaf0 !important;
+    caret-color: #ff4d4d !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+[data-testid="stChatInput"] textarea::placeholder {
+    color: rgba(232,234,240,0.45) !important;
+    -webkit-text-fill-color: rgba(232,234,240,0.45) !important;
+}
+
+/* Sometimes Streamlit wraps with another div */
+[data-testid="stChatInput"] div,
+[data-testid="stChatInput"] section {
+    background: transparent !important;
+}
+
+/* Force the editable area */
+[data-testid="stChatInput"] textarea,
+[data-testid="stChatInput"] textarea:focus,
+[data-testid="stChatInput"] textarea:active {
+    outline: none !important;
+}
  
 </style>
 """, unsafe_allow_html=True)

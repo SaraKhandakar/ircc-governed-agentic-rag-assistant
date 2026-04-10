@@ -40,7 +40,7 @@ def _generate(system_prompt: str, user_prompt: str, model: str = "llama-3.1-8b-i
 # Tool: RAG
 # -----------------------------
 def _run_rag(query: str, model: str) -> dict:
-    chunks = search(query, k=5)
+    chunks = search(query, k=8)
  
     if not chunks:
         return {
