@@ -443,6 +443,12 @@ div[role="option"]:hover {
     border-radius: 2px;
 }
 
+/* ---------- BOTTOM AREA ---------- */
+[data-testid="stBottomBlockContainer"] {
+    background: transparent !important;
+    border: none !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -635,11 +641,6 @@ for idx, msg in enumerate(st.session_state.messages):
             msg["message_id"] = idx
             render_details(msg)
 
-/* ---------- BOTTOM AREA ---------- */
-[data-testid="stBottomBlockContainer"] {
-    background: transparent !important;
-    border: none !important;
-}
 
 # -----------------------------
 # Chat input
