@@ -345,7 +345,7 @@ input {
 
 .source-card .url {
     font-size: 0.75rem;
-    color: #ff4d4d;
+    color: #ff4d4d !important;
     margin-top: 0.25rem;
     word-break: break-all;
 }
