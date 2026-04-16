@@ -72,7 +72,8 @@ body {
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"],
 [data-testid="stMainBlockContainer"] {
-    background: transparent !important;
+    background: #0a0e1a !important;
+    background-color: #0a0e1a !important;
 }
 
 /* ---------- SIDEBAR ---------- */
@@ -443,22 +444,15 @@ div[role="option"]:hover {
     border-radius: 2px;
 }
 
-/* ---------- BOTTOM AREA ---------- */
-[data-testid="stBottomBlockContainer"] {
-    background: transparent !important;
-    border: none !important;
-}
-
-/* FORCE REMOVE GREY BOTTOM AREA */
-[data-testid="stBottomBlockContainer"] {
-    background-color: transparent !important;
-    background: transparent !important;
-    border: none !important;
-}
-
-/* ALSO FORCE PARENT CONTAINER DARK */
+/* ---------- BOTTOM / CHAT AREA FIX ---------- */
+[data-testid="stBottomBlockContainer"],
+[data-testid="stBottom"],
+section[data-testid="stChatInputContainer"],
 [data-testid="stAppViewContainer"] > div:last-child {
-    background: transparent !important;
+    background: #0a0e1a !important;
+    background-color: #0a0e1a !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 </style>
