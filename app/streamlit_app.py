@@ -449,6 +449,18 @@ div[role="option"]:hover {
     border: none !important;
 }
 
+/* FORCE REMOVE GREY BOTTOM AREA */
+[data-testid="stBottomBlockContainer"] {
+    background-color: transparent !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* ALSO FORCE PARENT CONTAINER DARK */
+[data-testid="stAppViewContainer"] > div:last-child {
+    background: transparent !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
