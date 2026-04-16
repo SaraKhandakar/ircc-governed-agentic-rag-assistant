@@ -313,7 +313,7 @@ a:hover {
 
 /* ---------- TEXT AREAS ---------- */
 .stTextArea textarea,
-input:not([data-testid="stChatInput"] input) {
+input {
     color: #e8eaf0 !important;
     background: rgba(255,255,255,0.03) !important;
     -webkit-text-fill-color: #e8eaf0 !important;
@@ -363,13 +363,17 @@ input:not([data-testid="stChatInput"] input) {
     box-shadow: none !important;
 }
 
-[data-testid="stChatInput"] textarea {
+[data-testid="stChatInput"] textarea,
+[data-testid="stChatInput"] textarea:focus,
+[data-testid="stChatInput"] textarea:active {
     background: #111827 !important;
+    background-color: #111827 !important;
     color: #e8eaf0 !important;
     -webkit-text-fill-color: #e8eaf0 !important;
     caret-color: #ff4d4d !important;
     border: none !important;
     box-shadow: none !important;
+    outline: none !important;
 }
 
 [data-testid="stChatInput"] textarea::placeholder {
@@ -381,6 +385,31 @@ input:not([data-testid="stChatInput"] input) {
     background: #ff4d4d !important;
     color: white !important;
     border: none !important;
+}
+
+/* ---------- SELECTBOX FIELD ---------- */
+[data-testid="stSelectbox"] > div {
+    background: transparent !important;
+}
+
+[data-testid="stSelectbox"] [data-baseweb="select"] {
+    background: transparent !important;
+}
+
+[data-testid="stSelectbox"] [data-baseweb="select"] > div {
+    background: #111827 !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 10px !important;
+    color: #e8eaf0 !important;
+}
+
+[data-testid="stSelectbox"] * {
+    color: #e8eaf0 !important;
+    -webkit-text-fill-color: #e8eaf0 !important;
+}
+
+[data-testid="stSelectbox"] svg {
+    fill: #e8eaf0 !important;
 }
 
 /* ---------- DROPDOWN POPUP ---------- */
@@ -605,6 +634,12 @@ for idx, msg in enumerate(st.session_state.messages):
         if msg["role"] == "assistant":
             msg["message_id"] = idx
             render_details(msg)
+
+/* ---------- BOTTOM AREA ---------- */
+[data-testid="stBottomBlockContainer"] {
+    background: transparent !important;
+    border: none !important;
+}
 
 # -----------------------------
 # Chat input
