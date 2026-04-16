@@ -312,9 +312,8 @@ a:hover {
 }
 
 /* ---------- TEXT AREAS ---------- */
-textarea,
 .stTextArea textarea,
-input {
+input:not([data-testid="stChatInput"] input) {
     color: #e8eaf0 !important;
     background: rgba(255,255,255,0.03) !important;
     -webkit-text-fill-color: #e8eaf0 !important;
@@ -351,11 +350,6 @@ input {
 }
 
 /* ---------- CHAT INPUT ---------- */
-[data-testid="stBottomBlockContainer"] {
-    background: linear-gradient(135deg, #0a0e1a 0%, #0d1220 50%, #0a0f1c 100%) !important;
-    border-top: 1px solid rgba(255,255,255,0.06) !important;
-}
-
 [data-testid="stChatInput"] {
     background: transparent !important;
     border: none !important;
@@ -369,17 +363,16 @@ input {
     box-shadow: none !important;
 }
 
-[data-testid="stChatInput"] textarea,
-[data-testid="stChatInput"] input {
-    background: transparent !important;
+[data-testid="stChatInput"] textarea {
+    background: #111827 !important;
     color: #e8eaf0 !important;
     -webkit-text-fill-color: #e8eaf0 !important;
     caret-color: #ff4d4d !important;
-    font-family: 'Outfit', sans-serif !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
-[data-testid="stChatInput"] textarea::placeholder,
-[data-testid="stChatInput"] input::placeholder {
+[data-testid="stChatInput"] textarea::placeholder {
     color: rgba(232, 234, 240, 0.45) !important;
     -webkit-text-fill-color: rgba(232, 234, 240, 0.45) !important;
 }
@@ -388,36 +381,6 @@ input {
     background: #ff4d4d !important;
     color: white !important;
     border: none !important;
-}
-
-[data-testid="stChatInput"] textarea,
-[data-testid="stChatInput"] textarea:focus,
-[data-testid="stChatInput"] textarea:active {
-    outline: none !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* ---------- SELECTBOX ---------- */
-[data-testid="stSelectbox"] > div,
-[data-testid="stSelectbox"] [data-baseweb="select"] {
-    background: transparent !important;
-}
-
-[data-testid="stSelectbox"] [data-baseweb="select"] > div {
-    background: rgba(255, 255, 255, 0.06) !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    border-radius: 10px !important;
-    color: #e8eaf0 !important;
-}
-
-[data-testid="stSelectbox"] * {
-    color: #e8eaf0 !important;
-    -webkit-text-fill-color: #e8eaf0 !important;
-}
-
-[data-testid="stSelectbox"] svg {
-    fill: #e8eaf0 !important;
 }
 
 /* ---------- DROPDOWN POPUP ---------- */
